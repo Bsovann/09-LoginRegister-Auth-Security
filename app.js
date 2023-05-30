@@ -2,7 +2,7 @@
 const express = require('express');
 const mongoose = require('mongoose'); 
 const ejs = require('ejs'); 
-const encrypt = require('mongoose-encryption'); 
+const encrypt = require('mongoose-encryption'); ``
 const bodyParser = require('body-parser'); 
 
 // connect mongodD with Mongoose
@@ -11,10 +11,13 @@ async function main(){
         await mongoose.connect("mongodb://127.0.0.1:27017/User");
 }
 // Define Schema 
-const userSchema = {
+const userSchema = new mongoose.Schema({
     email : String,
     password : String
-};
+});
+
+// Encryption plug in 
+userSchema.plugin(encrypt, {secret : "MyNameIsBondithAndIloveVichet", encryptedFields : ['password']}); 
 
 // Initialize collection
 const User = new mongoose.model('User', userSchema);
