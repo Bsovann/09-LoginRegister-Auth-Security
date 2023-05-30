@@ -1,14 +1,15 @@
 //jshint esversion:6
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose'); 
 const ejs = require('ejs'); 
 const encrypt = require('mongoose-encryption'); ``
 const bodyParser = require('body-parser'); 
-
+console.log(process.env.SECRET);
 // connect mongodD with Mongoose
 main().catch(err => console.log(err));
 async function main(){
-        await mongoose.connect("mongodb://127.0.0.1:27017/User");
+        await mongoose.connect(process.env.DB_HOST);
 }
 // Define Schema 
 const userSchema = new mongoose.Schema({
@@ -17,7 +18,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Encryption plug in 
-userSchema.plugin(encrypt, {secret : "MyNameIsBondithAndIloveVichet", encryptedFields : ['password']}); 
+userSchema.plugin(encrypt, {secret : process.env.SECRET, encryptedFields : ['password']}); 
 
 // Initialize collection
 const User = new mongoose.model('User', userSchema);
@@ -57,9 +58,14 @@ app.post("/login", async function(req, res){
     const email = req.body.username; 
     const password = req.body.password; 
 
-    const userInfo = await User.findOne({email : email, password : password});
-    if (userInfo != null)
-        res.render("secrets");
+    const userInfo = await User.findOne({email : email});
+
+    if (userInfo != null){
+            if(userInfo.password === password)
+                res.render("secrets");
+            else
+                res.render("login");
+    }
     else 
         res.render("login"); // Password Incorrect;
 });
