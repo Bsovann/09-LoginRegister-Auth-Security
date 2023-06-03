@@ -1,4 +1,4 @@
-
+<<<<<<< HEAD
 //jshint esversion:6
 require('dotenv').config();
 const express = require('express');
@@ -124,7 +124,7 @@ app.post("/login", async function(req, res){
 
 app.listen(3000, function(){
     console.log("Server started on port 3000!");
-
+=======
 //jshint esversion:6
 require('dotenv').config();
 const express = require('express');
@@ -198,4 +198,5 @@ app.post("/login", async function(req, res){
 
 app.listen(3000, function(){
     console.log("Server started on port 3000!");
+>>>>>>> 849b3d0 (Add: add dependencies)
 });
