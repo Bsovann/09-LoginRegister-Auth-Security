@@ -9,6 +9,7 @@ const md5 = require('md5');
 const session = require('express-session'); 
 const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
+// Add new line for test 
 
 /*
     1. Set up express session
