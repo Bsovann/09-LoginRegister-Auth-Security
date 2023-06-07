@@ -10,7 +10,7 @@ const passport = require('passport');
 const passportLocalMongoose = require('passport-local-mongoose');
 const findOrCreate = require('mongoose-findorcreate');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
+const FacebookStrategy = require('passport-facebook').Strategy;
 /*
     1. Set up express session
     2. Initialize passport and use it
@@ -47,7 +47,8 @@ async function main(){
 const userSchema = new mongoose.Schema({
     email : String,
     password : String,
-    googleId : String
+    googleId : String,
+    facebookId : String
 });
 
 // Set up passport-local-mongoose
@@ -79,6 +80,7 @@ passport.serializeUser(function(user, cb) {
     });
   });
 
+// Begin Google Login
 // Google Strategy
 passport.use(new GoogleStrategy({
 
@@ -99,19 +101,46 @@ app.get("/auth/google", passport.authenticate("google", { scope : ["profile"] })
 app.get("/auth/google/secrets", passport.authenticate("google", { failureRedirect : "/login" }), function(req, res){
     res.redirect("/secrets");
 });
+// End Google Login
 
+// Begin facebook Login
+// Facebook Strategy
+passport.use(new FacebookStrategy({
+    clientID: process.env.FACEBOOK_APP_ID,
+    clientSecret: process.env.FACEBOOK_APP_SECRET,
+    callbackURL: "http://localhost:3000/auth/facebook/secrets",
+    profileFields: ["id", "displayName", "photos", "email"]
+  },
+  function(accessToken, refreshToken, profile, cb) {
+    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+      return cb(err, user);
+    });
+  }
+));
+
+app.get("/auth/facebook", passport.authenticate("facebook", { scope : ["email"] }));
+app.get("/auth/facebook/secrets", passport.authenticate("facebook", { failureRedirect : "/login" }), 
+    function(req, res){
+    res.redirect("/secrets");
+});
+// End facebook Login
+
+// Render Home Page
 app.get("/", function(req, res){
     res.render("home");
 });
 
+// Render Login Page
 app.get("/login", function(req, res){
     res.render("login");
 }); 
 
+// Render Register Page
 app.get("/register", function(req, res){
     res.render("register");
 }); 
 
+// Render Secret Page
 app.get("/secrets", function(req, res){
     if(req.isAuthenticated())
         res.render("secrets");
@@ -119,6 +148,7 @@ app.get("/secrets", function(req, res){
         res.redirect("/login");
 });
 
+// Render Logout Page
 app.get("/logout", function(req, res){
     req.logout(function(err){
         if(err)
@@ -128,6 +158,7 @@ app.get("/logout", function(req, res){
     });
 });
 
+// Post request for Register Page
 app.post("/register", function(req, res){
     User.register({username: req.body.username}, req.body.password, function(err, user){
         if(err){
@@ -142,6 +173,7 @@ app.post("/register", function(req, res){
     }); 
 }); 
 
+// Post request for Login Page
 app.post("/login", async function(req, res){
     const user = new User({
         username : req.body.username, 
@@ -160,6 +192,7 @@ app.post("/login", async function(req, res){
    });
 });
 
+// Start Up Server
 app.listen(3000, function(){
     console.log("Server started on port 3000!");
 });
